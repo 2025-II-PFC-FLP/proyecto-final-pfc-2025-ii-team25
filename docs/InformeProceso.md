@@ -234,3 +234,268 @@ costoMovilidad(f, pi, d) = 13
 ```
 
 ---
+
+## 5. Proceso Recursivo de `generarProgramacionesRiego`
+
+Este es el proceso más complejo por su naturaleza factorial.
+
+### Ejemplo pequeño
+```scala
+val f: Finca = Vector((10,3,2), (8,2,1), (12,4,3))
+// n = 3 tablones
+generarProgramacionesRiego(f)
+```
+
+### Llamadas recursivas (árbol de permutaciones)
+```
+permutaciones([0,1,2])
+├─ elem=0, resto=[1,2]
+│   └─ permutaciones([1,2])
+│       ├─ elem=1, resto=[2]
+│       │   └─ permutaciones([2])
+│       │       └─ permutaciones([]) → [[]]
+│       │       └─ return [[2]]
+│       │   └─ return [[1,2]]
+│       └─ elem=2, resto=[1]
+│           └─ permutaciones([1])
+│               └─ permutaciones([]) → [[]]
+│               └─ return [[1]]
+│           └─ return [[2,1]]
+│   └─ return [[0,1,2], [0,2,1]]
+│
+├─ elem=1, resto=[0,2]
+│   └─ permutaciones([0,2])
+│       ├─ elem=0, resto=[2]
+│       │   └─ return [[0,2]]
+│       └─ elem=2, resto=[0]
+│           └─ return [[2,0]]
+│   └─ return [[1,0,2], [1,2,0]]
+│
+└─ elem=2, resto=[0,1]
+    └─ permutaciones([0,1])
+        ├─ elem=0, resto=[1]
+        │   └─ return [[0,1]]
+        └─ elem=1, resto=[0]
+            └─ return [[1,0]]
+    └─ return [[2,0,1], [2,1,0]]
+```
+
+### Pila de llamadas (profundidad máxima)
+```
+permutaciones([0,1,2])
+  permutaciones([1,2])
+    permutaciones([2])
+      permutaciones([])
+```
+
+### Despliegue de la pila
+```
+permutaciones([]) → Vector(Vector())
+permutaciones([2]) → Vector(Vector(2))
+permutaciones([1,2]) → Vector(Vector(1,2), Vector(2,1))
+permutaciones([0,1,2]) → Vector(
+  Vector(0,1,2),
+  Vector(0,2,1),
+  Vector(1,0,2),
+  Vector(1,2,0),
+  Vector(2,0,1),
+  Vector(2,1,0)
+)
+```
+
+### Resultado final
+```
+generarProgramacionesRiego(f) = [
+  [0,1,2], [0,2,1], [1,0,2],
+  [1,2,0], [2,0,1], [2,1,0]
+]
+// Total: 3! = 6 programaciones
+```
+
+---
+
+## 6. Proceso Recursivo de `ProgramacionRiegoOptimo`
+
+Este proceso integra todos los anteriores.
+
+### Ejemplo
+```scala
+val f: Finca = Vector((10,3,2), (8,2,1), (12,4,3))
+val d: Distancia = Vector(
+  Vector(0, 5, 8),
+  Vector(5, 0, 3),
+  Vector(8, 3, 0)
+)
+ProgramacionRiegoOptimo(f, d)
+```
+
+### Paso 1: Generar todas las programaciones
+```
+programaciones = generarProgramacionesRiego(f)
+= [[0,1,2], [0,2,1], [1,0,2], [1,2,0], [2,0,1], [2,1,0]]
+```
+
+### Paso 2: Evaluar cada programación
+```
+Para pi = [0,1,2]:
+  costoRiegoFinca(f, [0,1,2]):
+    → tIR = [0,3,5]
+    → costos = [7,3,3]
+    → suma = 13
+  costoMovilidad(f, [0,1,2], d):
+    → orden = [0,1,2]
+    → distancias = [5,3]
+    → suma = 8
+  costoTotal = 13 + 8 = 21
+
+Para pi = [0,2,1]:
+  costoRiegoFinca(f, [0,2,1]):
+    → tIR = [0,7,3]
+    → costos = [7,-1,5]  // Tablón 1 tiene penalización
+    → suma = 11
+  costoMovilidad(f, [0,2,1], d):
+    → orden = [0,2,1]
+    → distancias = [8,3]
+    → suma = 11
+  costoTotal = 11 + 11 = 22
+
+Para pi = [1,0,2]:
+  costoRiegoFinca(f, [1,0,2]):
+    → tIR = [2,0,5]
+    → costos = [5,6,3]
+    → suma = 14
+  costoMovilidad(f, [1,0,2], d):
+    → orden = [1,0,2]
+    → distancias = [5,8]
+    → suma = 13
+  costoTotal = 14 + 13 = 27
+
+Para pi = [1,2,0]:
+  costoRiegoFinca(f, [1,2,0]):
+    → tIR = [6,0,2]
+    → costos = [1,6,6]
+    → suma = 13
+  costoMovilidad(f, [1,2,0], d):
+    → orden = [1,2,0]
+    → distancias = [3,8]
+    → suma = 11
+  costoTotal = 13 + 11 = 24
+
+Para pi = [2,0,1]:
+  costoRiegoFinca(f, [2,0,1]):
+    → tIR = [4,7,0]
+    → costos = [3,-3,8]  // Tablón 1 con penalización
+    → suma = 8
+  costoMovilidad(f, [2,0,1], d):
+    → orden = [2,0,1]
+    → distancias = [8,5]
+    → suma = 13
+  costoTotal = 8 + 13 = 21
+
+Para pi = [2,1,0]:
+  costoRiegoFinca(f, [2,1,0]):
+    → tIR = [6,4,0]
+    → costos = [1,2,8]
+    → suma = 11
+  costoMovilidad(f, [2,1,0], d):
+    → orden = [2,1,0]
+    → distancias = [3,5]
+    → suma = 8
+  costoTotal = 11 + 8 = 19
+```
+
+### Paso 3: Seleccionar el mínimo
+```
+Programación: [0,1,2] → Costo: 21
+Programación: [0,2,1] → Costo: 22
+Programación: [1,0,2] → Costo: 27
+Programación: [1,2,0] → Costo: 24
+Programación: [2,0,1] → Costo: 21
+Programación: [2,1,0] → Costo: 19  ← MÍNIMO
+```
+
+### Resultado final
+```
+ProgramacionRiegoOptimo(f, d) = ([2,1,0], 19)
+// La programación óptima es: regar tablón 2, luego 1, luego 0
+// Con un costo total de 19
+```
+
+---
+
+## 7. Complejidad de los Procesos
+
+### Análisis de complejidad temporal
+
+| Función | Complejidad | Justificación |
+|---------|-------------|---------------|
+| `tIR` | O(n log n) | Ordenamiento + acumulación lineal |
+| `costoRiegoTablon` | O(n) | Llamada a tIR |
+| `costoRiegoFinca` | O(n²) | n llamadas a costoRiegoTablon |
+| `costoMovilidad` | O(n log n) | Ordenamiento + sliding |
+| `generarProgramacionesRiego` | O(n! × n) | n! permutaciones, cada una de tamaño n |
+| `ProgramacionRiegoOptimo` | O(n! × n²) | n! evaluaciones × costo O(n²) cada una |
+
+### Crecimiento factorial
+```
+n = 3  → 3! = 6 programaciones
+n = 4  → 4! = 24 programaciones
+n = 5  → 5! = 120 programaciones
+n = 7  → 7! = 5,040 programaciones
+n = 10 → 10! = 3,628,800 programaciones
+```
+
+**Conclusión:** El algoritmo es intratable para n ≥ 11 sin paralelización.
+
+---
+
+## 8. Diagrama de Flujo de Ejecución Completa
+```
+ProgramacionRiegoOptimo(f, d)
+│
+├─→ generarProgramacionesRiego(f)
+│   │
+│   └─→ permutaciones([0,1,2,...,n-1])
+│       ├─→ Caso base: [] → [[]]
+│       └─→ Caso recursivo: construir árbol
+│           └─→ return: n! programaciones
+│
+└─→ Para cada programación pi:
+    │
+    ├─→ costoRiegoFinca(f, pi)
+    │   │
+    │   ├─→ tIR(f, pi)
+    │   │   ├─→ Ordenar tablones
+    │   │   ├─→ Acumular tiempos
+    │   │   └─→ Asignar posiciones
+    │   │
+    │   └─→ ∑ costoRiegoTablon(i, f, pi)
+    │       └─→ Para cada tablón i:
+    │           ├─→ Calcular inicio y fin
+    │           ├─→ Verificar condición
+    │           └─→ Aplicar fórmula
+    │
+    ├─→ costoMovilidad(f, pi, d)
+    │   ├─→ Obtener orden
+    │   ├─→ Generar pares
+    │   └─→ Sumar distancias
+    │
+    └─→ costoTotal = CR + CM
+│
+└─→ minBy(costoTotal)
+    └─→ return (mejorPi, menorCosto)
+```
+
+---
+
+## Conclusión del Informe de Procesos
+
+El sistema de programación de riego óptimo utiliza:
+
+1. **Recursión exhaustiva** en `generarProgramacionesRiego` para explorar todas las posibilidades (n!)
+2. **Acumulación iterativa** en `tIR` para calcular tiempos de inicio
+3. **Evaluación condicional** en `costoRiegoTablon` para determinar penalizaciones
+4. **Agregación** en `costoRiegoFinca` y `costoMovilidad` para sumar costos parciales
+5. **Optimización** en `ProgramacionRiegoOptimo` para seleccionar la mejor programación
+
+La naturaleza factorial del problema hace esencial la **paralelización** para instancias con n ≥ 9 tablones
