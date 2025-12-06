@@ -12,6 +12,8 @@
 | ------------------------- | ------ | -------------- | ------------------------- |
 | Juan Jose Ospina Sanchez  | 2559711 | Colaborador   | juan.jose.ospina@correounivalle.edu.co |
 | Juan David Quintero Garcia  | 2559710 | Colaborador   | juan.david.quintero@correounivalle.edu.co |
+| Juan David Naranjo  | 2569497 | Colaborador   | juan.pamplona@correounivalle.edu.co |
+| Christian Trujillo  | 2569134 | Colaborador   | Christian.david.trujillo@correounivalle.edu.co |
 
 ## 📌 Descripción de la Asignación
 
