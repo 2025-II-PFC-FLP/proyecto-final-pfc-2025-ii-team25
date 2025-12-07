@@ -141,8 +141,6 @@ $$
 
 El cálculo del costo total se realiza de forma eficiente, con una complejidad (O(n)) para cada programación de riego, ya que la evaluación del costo de riego y el costo de movilidad se realiza en (O(n)) para cada permutación.
 
----
-
 ## 5. Conclusiones
 
 Este enfoque optimiza significativamente la ejecución del algoritmo para generar y evaluar las programaciones de riego. Las mejoras clave son:
