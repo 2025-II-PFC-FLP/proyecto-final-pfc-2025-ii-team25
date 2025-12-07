@@ -18,19 +18,12 @@ plugins {
 tasks.withType(ScalaCompile) {
     scalaCompileOptions.additionalParameters = [
       "-J-Xmx2g",
+      "-J-Xss8m"
     ]
 }
 
 tasks.withType(JavaExec) {
-    jvmArgs = ["-Xmx2g"]
-}
-
-tasks.withType(ScalaCompile) {
-    scalaCompileOptions.additionalParameters += ["-J-Xss8m","-J-Xmx2g"] 
-}
-
-tasks.withType(JavaExec) {
-    jvmArgs += ["-Xss8m","-Xmx2g"]
+    jvmArgs = ["-Xmx2g", "-Xss8m"]
 }
 
 repositories {
@@ -40,19 +33,18 @@ repositories {
 
 dependencies {
     // Use Scala 2.13 in our library project
-    implementation 'org.scala-lang:scala-library:2.13.11'
+    implementation 'org.scala-lang:scala-library:2.13.13'
 
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:32.1.1-jre'
     implementation 'com.storm-enroute:scalameter-core_2.13:0.21'
-    implementation group: 'org.scala-lang.modules', name: 'scala-parallel-collections_2.13', version: '1.0.4'
+    implementation 'org.scala-lang.modules:scala-parallel-collections_2.13:1.0.4'
     // Use Scalatest for testing our library
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.scalatest:scalatest_2.13:3.2.16'
-    testImplementation 'org.scalatestplus:junit-4-13_2.13:3.2.2.0'
+    testImplementation 'org.scalatest:scalatest_2.13:3.2.19'
 
     // Need scala-xml at test runtime
-    testRuntimeOnly 'org.scala-lang.modules:scala-xml_2.13:1.2.0'
+    testRuntimeOnly 'org.scalatestplus:junit-5-10_2.13:3.2.19.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -65,4 +57,15 @@ java {
 application {
     // Define the main class for the application.
     mainClass = 'taller.App'
+}
+
+//Test
+tasks.withType(Test) {
+    useJUnitPlatform {
+        includeEngines 'scalatest'
+    }
+    testLogging {
+        events "passed", "failed", "skipped"
+        showStandardStreams = true
+    }
 }

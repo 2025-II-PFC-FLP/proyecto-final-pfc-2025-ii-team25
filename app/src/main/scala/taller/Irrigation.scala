@@ -75,35 +75,22 @@ object Irrigation {
     f(i)._3
   }
 
-  def tIR(f: Finca, pi: ProgRiego): TiempoInicioRiego = { // Calculo del tiempo de inicio de riego
-  val n = f.length
+  def tIR(f: Finca, pi: ProgRiego): TiempoInicioRiego = {
+    val n = f.length
 
-  val turnosOrdenados: Vector[Int] =
-    pi.zipWithIndex
-      .sortBy(_._1)     // π_j definidos por el orden de turnos
-      .map(_._2)        
+    val orden = pi.indices.sortBy(pi)
 
-  val tiemposOrdenados: Vector[Int] =
-    turnosOrdenados.foldLeft((Vector.empty[Int], 0)) {
-      case ((acc, tiempoActual), tablon) =>
-        val tiempoInicio = tiempoActual
+    val tiemposOrdenados =
+      orden.scanLeft(0)((acum, tabPrev) => acum + treg(f, tabPrev)).dropRight(1)
 
-        // t^Π_{π_{j+1}} = t^Π_{π_j} + tr(F_{π_j})
-        val nuevoTiempo = tiempoActual + treg(f, tablon)
+    val res = Array.fill(n)(0)
 
-        (acc :+ tiempoInicio, nuevoTiempo)
-    }._1
-
-  // Asignar tiempos calculados t^Π_{π_j} en la posición del tablón π_j
-  val resultado: Vector[Int] =
-    turnosOrdenados.zip(tiemposOrdenados).foldLeft(
-      Vector.fill(n)(0)
-    ){ case (acc, (tablon, tiempoInicio)) =>
-      acc.updated(tablon, tiempoInicio)
+    orden.zip(tiemposOrdenados).foreach { case (tablon, t) =>
+      res(tablon) = t
     }
 
-  resultado
-}
+    res.toVector
+  }
 
   def costoRiegoTablon(i: Int, f: Finca, pi: ProgRiego): Int = {
   val t = tIR(f, pi)         
